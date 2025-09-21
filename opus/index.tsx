@@ -32,24 +32,60 @@ const button = styled.div`
   }
 `
 
+const scrollToElement = (element: Element) => {
+  element.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  })
+}
+
+const getReplyInformation = (replyElement: Element) => {
+  const contentsElement = replyElement.shadowRoot
+    .querySelector("bili-comment-renderer")
+    .shadowRoot.querySelector("#body > #main")
+
+  console.log(contentsElement)
+
+  const data = {
+    // 用户名
+    username: contentsElement
+      .querySelector("bili-comment-user-info")
+      .shadowRoot.querySelector("#user-name")
+      .textContent.trim()
+  }
+
+  return data
+}
+
 const getallcomments = () => {
-  const opusDetailElements = document.querySelectorAll(
-    ".opus-detail .bili-comment-container"
+  const biliCommentsHost = document.querySelector(
+    ".bili-comment-container bili-comments"
   )
 
-  // 检查是否找到元素
-  if (opusDetailElements.length === 0) {
-    console.log("没有找到类名为 opus-detail 的元素")
-    return
-  }
+  const contentsElement = biliCommentsHost.shadowRoot.querySelector("#contents")
 
-  // 滚动到第一个找到的元素
-  if (opusDetailElements[0]) {
-    opusDetailElements[0].scrollIntoView({
-      behavior: "smooth", // 平滑滚动
-      block: "start" // 滚动到元素的顶部
-    })
-  }
+  scrollToElement(contentsElement)
+
+  const replyElements = contentsElement.querySelectorAll(
+    "bili-comment-thread-renderer"
+  )
+
+  replyElements.forEach((element, index) => {
+    console.log(getReplyInformation(element))
+
+    if (element) {
+      const rect = element.getBoundingClientRect()
+
+      if (
+        rect.top < 0 || // 元素在视窗上方
+        rect.bottom >
+          (window.innerHeight || document.documentElement.clientHeight) // 元素在视窗下方
+      ) {
+        // 如果不在屏幕内，滚动到该元素
+        scrollToElement(element)
+      }
+    }
+  })
 }
 
 const Index = () => {
